@@ -1,15 +1,13 @@
 version: '3'
 services:
-    #reverseproxy:
-    #    build:
-    #        context: ./reverseproxy-docker
-    #        dockerfile: Dockerfile
-    #    ports:
-    #        - 80:80
-    #        - 443:443
-        #networks:
-        #    - frontendWEB
-    #    restart: always
+    reverseproxy:
+        build:
+            context: ./reverseproxy
+            dockerfile: Dockerfile
+        ports:
+            - 80:80
+            - 443:443
+        restart: always
     
     #dbapp:
     #    image: mysql:5
@@ -25,7 +23,7 @@ services:
     #        restart_policy:
     #            condition: any    
       
-    nginx:
+    tarnith.com:
         build:
             context: ./tarnith.com
             dockerfile: Dockerfile
@@ -34,8 +32,8 @@ services:
             - /etc/letsencrypt/live/pbok.ca/fullchain.pem:/etc/nginx/fullchain.pem
             - /etc/letsencrypt/live/pbok.ca/cert.pem:/etc/nginx/cert.pem
             - /etc/letsencrypt/live/pbok.ca/privkey.pem:/etc/nginx/privkey.pem
-            - /home/ec2-user/docker/reverseproxy-docker/nginx.conf:/etc/nginx/nginx.conf
+        #    - /home/ec2-user/docker/reverseproxy-docker/nginx.conf:/etc/nginx/nginx.conf
         ports:
-            - 80:80
-            - 443:443
+        #    - 8080:80
+            - 8080:443
         
