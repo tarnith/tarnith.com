@@ -1,6 +1,3 @@
-//import * as THREE from './three.js';
-//import {WEBGL} from './webgl.js';
-
 window.addEventListener('load',init)
 
 let scene,camera,renderer;
@@ -19,11 +16,23 @@ function init(){
     camera = new THREE.Camera();
     camera.position.z = 1;   
     
+    //let test = document.querySelector('body');
+    let linkDiv = document.getElementById('linkDiv');
+    console.log(linkDiv.scrollHeight);
+    let body = document.documentElement;
+    console.log(body.clientHeight);
+    /*
+    let body = document.body,html = document.documentElement;
+    
+    let test = Math.max( body.scrollHeight, body.offsetHeight, 
+      html.clientHeight, html.scrollHeight, html.offsetHeight )
+    console.log(test)
+    */
     renderer = new THREE.WebGLRenderer({ canvas: testCanvas })
     renderer.setPixelRatio( window.devicePixelRatio );
-    //document.body.appendChild(renderer.domElement)
+    document.body.appendChild(renderer.domElement);
     onWindowResize();
-    window.addEventListener( 'resize', onWindowResize, false );
+    window.addEventListener( 'resize', onWindowResize,false );
     //addExperimentalCube(uniforms)
     document.onmousemove = function(e){
       uniforms.iMouse.value.x = e.pageX
@@ -48,8 +57,7 @@ function fragmentShader() {
     uniform vec2 iResolution;
     uniform float iTime;
     uniform vec2 iMouse;
-        
-      
+    #define PI 3.14159265358979323844
     vec3 pal( in float t, in vec3 a, in vec3 b, in vec3 c, in vec3 d ) {
     return a + b*cos( 6.28318*(c*t+d) );
     }
@@ -58,9 +66,7 @@ function fragmentShader() {
     }
     void main() {
       vec2 fragCoord = gl_FragCoord.xy;
-      // vec4 color = texture(sTD2DInputs[0], vUV.st);
       vec2 uv = (fragCoord-.5*iResolution.xy) /iResolution.y;
-      vec3 col = vec3(0.);
       vec2 gv = fract(uv*10.)-.5;
       vec2 av = fract(uv*11.)-.5;
       vec3 loopOut = vec3(0);
@@ -70,23 +76,26 @@ function fragmentShader() {
       float otherTime = (iTime+2.);
       float t = iTime*5.;
       float tDel = (iTime-(t*delayAmt))*.1;
-    
+      
       for (float y=-1.; y<=1.; y++){for(float x=-1.; x<=1.; x++){
-          
           vec2 offset = vec2(x, y);
-    
           float d = length(gv-offset);
           float altD = length(av-offset);
-      
           float r = mix(.32, .5, 
             sin((-t*.5+.5+
               ((iMouse.x*iMouse.y)/(iResolution.x*iResolution.y)))+
               length(sin(uv))*40.+((iMouse.y)/(iResolution.x))*.5));
           m += S(d-r);
           float rDel = mix(.2, .5, sin((tDel*.5+.5)+length(sin(uv*10.))*20.));
-          n += S(altD-rDel);
-      }}
-      loopOut = m*spectrum(iTime*.25+(iMouse.x/iResolution.y)*.5)*(n*spectrum(iTime*.2+(iMouse.x/iResolution.y)*.5))*4.;
+          n += S(altD-rDel);}}
+      loopOut = m*spectrum(
+        (
+        (sin(
+          dot(uv.x,uv.y)*
+          sin(iTime*.1)))
+          +((iMouse.x*1./iMouse.y))*.02)
+          *iTime*.25+(iMouse.x/iResolution.y)
+          *.2)*(n*spectrum(iTime*.2+(iMouse.x*1./iResolution.y)*.2))*4.;
       loopOut = loopOut*(vec3(length(uv*.4))+.4);
       vec4 color = vec4(loopOut, 1.0);
       gl_FragColor = color;
@@ -106,8 +115,10 @@ function addShaderPlane(uniforms){
   scene.add(mesh);
   sceneObjects.push(mesh);
 }
-function onWindowResize( event ) {
-  renderer.setSize( window.innerWidth, window.innerHeight );
+function onWindowResize( event) {
+  let linkDiv = document.getElementById('linkDiv');
+  
+  renderer.setSize( window.innerWidth, Math.max(linkDiv.scrollHeight,window.innerHeight) );
   uniforms.iResolution.value.x = renderer.domElement.width;
   uniforms.iResolution.value.y = renderer.domElement.height;
 }
@@ -116,11 +127,6 @@ function render(time) {
   const canvas = renderer.domElement;
   uniforms.iResolution.value.set(canvas.width, canvas.height, 1);
   uniforms.iTime.value = time;
- 
   renderer.render(scene, camera);
-  for(let object of sceneObjects) {
-    object.rotation.x += 0.005
-    object.rotation.y += 0.015
-  }
   requestAnimationFrame(render);
 }
