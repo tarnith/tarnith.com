@@ -57,7 +57,7 @@ function fragmentShader() {
     uniform vec2 iResolution;
     uniform float iTime;
     uniform vec2 iMouse;
-    #define PI 3.14159265358979323844
+    #define PI 3.141592653;
     vec3 pal( in float t, in vec3 a, in vec3 b, in vec3 c, in vec3 d ) {
     return a + b*cos( 6.28318*(c*t+d) );
     }
@@ -69,6 +69,8 @@ function fragmentShader() {
       vec2 uv = (fragCoord-.5*iResolution.xy) /iResolution.y;
       vec2 gv = fract(uv*10.)-.5;
       vec2 av = fract(uv*11.)-.5;
+      vec2 pv = vec2(atan(uv.x,uv.y),length(uv));
+      vec2 pm = vec2(atan(iMouse.x,iMouse.y),length(iMouse));
       vec3 loopOut = vec3(0);
       float m = 0.;
       float n = 0.;
@@ -76,29 +78,26 @@ function fragmentShader() {
       float otherTime = (iTime+2.);
       float t = iTime*5.;
       float tDel = (iTime-(t*delayAmt))*.1;
-      
       for (float y=-1.; y<=1.; y++){for(float x=-1.; x<=1.; x++){
           vec2 offset = vec2(x, y);
           float d = length(gv-offset);
           float altD = length(av-offset);
           float r = mix(.32, .5, 
-            sin((-t*.5+.5+
-              ((iMouse.x*iMouse.y)/(iResolution.x*iResolution.y)))+
-              length(sin(uv))*40.+((iMouse.y)/(iResolution.x))*.5));
+            sin(((-t*.5)+
+              ((sin((iMouse.x*.001))*2.+3.)))+
+              length(sin(uv*2.))*40.));
           m += S(d-r);
           float rDel = mix(.2, .5, sin((tDel*.5+.5)+length(sin(uv*10.))*20.));
-          n += S(altD-rDel);}}
-      loopOut = m*spectrum(
-        (
-        (sin(
-          dot(uv.x,uv.y)*
-          sin(iTime*.1)))
-          +((iMouse.x*1./iMouse.y))*.02)
-          *iTime*.25+(iMouse.x/iResolution.y)
-          *.2)*(n*spectrum(iTime*.2+(iMouse.x*1./iResolution.y)*.2))*4.;
+          n += S(altD-rDel);
+          
+        }}
+        loopOut = m*spectrum(
+          (
+          (sin((pv.x-(uv.x,-uv.y))*sin(iTime*.1)))+((pm.x+pm.y)*.01)*.02)
+            *sin(iTime*.25)+pv.y
+            *.2)*(n*spectrum(sin(iTime)*.2+(pm.x/iResolution.y)*.2*pv.y))*4.;//m*spectrum(((sin((pv.x-(uv.x,-uv.y))))*.02)*sin(iTime*.25)+pv.y*.2)*(n*spectrum(pv.y*(iTime*100.*uv.x)))*4.;
       loopOut = loopOut*(vec3(length(uv*.4))+.4);
-      vec4 color = vec4(loopOut, 1.0);
-      gl_FragColor = color;
+      gl_FragColor = vec4(loopOut,1.0);
     }
 `
 }
