@@ -1,22 +1,29 @@
 version: '3'
+volumes:
+    cert:
+      external: true
 services:
+#    certbot:
+#        build:
+#          context: ./certbot
+#        volumes:
+#           - cert:/etc/letsencrypt:rw
+    
+
     reverseproxy:
         build:
             context: ./reverseproxy
             dockerfile: Dockerfile
+        volumes:
+            - cert:/cert/:ro
         ports:
             - 80:80
             - 443:443
         restart: always
     
-    tarnith.com:
+    tarnith:
         build:
             context: ./tarnith.com
             dockerfile: Dockerfile
         restart: always
-        volumes:
-            - cert:/
-        ports:
-        #    - 8080:80
-            - 8080:443
         
